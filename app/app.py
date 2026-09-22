@@ -109,7 +109,7 @@ def render_header() -> None:
     st.markdown(f'<div class="nk-app-name">{APP_NAME}</div>', unsafe_allow_html=True)
     st.markdown('<div class="nk-app-tagline">Medical AI Assistant</div>', unsafe_allow_html=True)
     st.markdown(
-        '<div class="nk-subtitle">Describe your symptoms and get AI-generated possible conditions.</div>',
+        '<div class="nk-subtitle">Describe your symptoms and get model generated possible conditions.</div>',
         unsafe_allow_html=True,
     )
     st.markdown(f'<div class="nk-disclaimer">⚕️ {DISCLAIMER}</div>', unsafe_allow_html=True)
@@ -190,10 +190,10 @@ def main() -> None:
         st.error(f"Couldn't start the assistant: {exc}")
         st.stop()
         return
-
     with st.sidebar:
         st.subheader(APP_NAME)
         st.caption("Medical AI Assistant")
+
         if metadata:
             st.markdown("**Model info**")
             st.markdown(
@@ -207,11 +207,41 @@ def main() -> None:
                 "This is a research/educational prototype, not a clinically "
                 "validated diagnostic system."
             )
-        with st.expander("Search known symptoms"):
-            query = st.text_input("Keyword", label_visibility="collapsed", placeholder="e.g. chest")
+
+        with st.expander("Supported Symptoms"):
+            st.caption(
+                f"This model supports {len(symptom_names)} trained symptoms."
+            )
+
+            query = st.text_input(
+                "Search symptoms",
+                label_visibility="collapsed",
+                placeholder="Search e.g. headache, chest, nausea..."
+            )
+
             if query:
-                matches = [s for s in symptom_names if query.lower() in s.lower()]
-                st.write(matches[:25] if matches else "No matches.")
+                matches = [
+                    s for s in symptom_names
+                    if query.lower() in s.lower()
+                ]
+
+                if matches:
+                    st.markdown(
+                        "\n".join(
+                            f"- {s.replace('_', ' ').capitalize()}"
+                            for s in matches
+                        )
+                    )
+                else:
+                    st.info("No supported symptom matches found.")
+            else:
+                st.markdown(
+                    "\n".join(
+                        f"- {s.replace('_', ' ').capitalize()}"
+                        for s in symptom_names
+                    )
+                )
+
         if st.button("Clear conversation"):
             st.session_state.messages = []
             st.rerun()
